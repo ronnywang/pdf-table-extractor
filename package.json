@@ -1,0 +1,12 @@
+{
+  "name": "pdf-table-extractor",
+  "version": "1.0.0",
+  "description": "Extract tables from PDF file",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ronny Wang",
+  "license": "BSD License",
+  "dependencies": {
+  }
+}
