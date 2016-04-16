@@ -39,6 +39,7 @@ td {
 <script id="script">
 var drop = document.getElementById('drop');
 function handleDrop(e) {
+    $('#json-result').text('Transfering file...');
     e.stopPropagation();
     e.preventDefault();
     var files = e.dataTransfer.files;
@@ -48,6 +49,7 @@ function handleDrop(e) {
         var name = f.name;
         reader.onload = function(e) {
             var data = e.target.result;
+            $('#json-result').text('Parsing PDF...');
             parse_content(data); //btoa(arr));
         };
         reader.readAsArrayBuffer(f);
