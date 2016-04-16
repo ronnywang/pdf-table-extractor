@@ -278,10 +278,13 @@ pdf_table_extractor = function(doc){
       }).then(function(){
           return page.getTextContent().then(function (content) {
                 tables = [];
+                table_pos = [];
                 for (var i = 0; i < horizons.length - 1; i ++) {
                     tables[i] = [];
+                    table_pos[i] = [];
                     for (var j = 0; j < verticles.length - 1; j ++) {
                         tables[i][j] = '';
+                        table_pos[i][j] = null;
                     }
                 }
                 while (item = content.items.shift()) {
@@ -314,7 +317,10 @@ pdf_table_extractor = function(doc){
                           row = id.split('-')[0];
                           col = id.split('-')[1];
                       }
-                      // TODO: newline
+                      if (null !== table_pos[row][col] && Math.abs(table_pos[row][col] - y) > 5) {
+                          tables[row][col] += "\n";
+                      }
+                      table_pos[row][col] = y;
                       tables[row][col] += item.str;
                   }
                 if (tables.length) {
