@@ -9,6 +9,16 @@
 
 <h1>PDF tables extractor</h1>
 <p>Sample: <a href="samples/pta_10229_131308_94274.pdf">samples/pta_10229_131308_94274.pdf</a></p>
+<p>Sample: <a href="samples/rid-01.pdf">samples/rid-01.pdf</a></p>
+
+<div style="border:1px solid">
+    <div id="drop">
+        <span>Drog PDF file here</span>
+    </div>
+    <span>or click </span>
+    <input type="file" id="pdf-file" />
+</div>
+
 <h2>JSON Result</h2>
 <textarea id="json-result" style="width: 100%; height: 200px"></textarea>
 <h2>HTML Result:</h2>
@@ -18,15 +28,45 @@
 <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
 <script src="pdf-table-extractor.js"></script>
 <script id="script">
+var drop = document.getElementById('drop');
+function handleDrop(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    var files = e.dataTransfer.files;
+    var f = files[0];
+    {
+        var reader = new FileReader();
+        var name = f.name;
+        reader.onload = function(e) {
+            var data = e.target.result;
+            parse_content(data); //btoa(arr));
+        };
+        reader.readAsArrayBuffer(f);
+    }
+}
+
+function handleDragover(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+}
+
+if(drop.addEventListener) {
+    drop.addEventListener('dragenter', handleDragover, false);
+    drop.addEventListener('dragover', handleDragover, false);
+    drop.addEventListener('drop', handleDrop, false);
+}
+
+
   //
   // If absolute URL from the remote server is provided, configure the CORS
   // header on that server.
   //
-  var url = 'samples/pta_10229_131308_94274.pdf';
 
+var parse_content = function(content){
   PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 
-  PDFJS.getDocument(url).then(pdf_table_extractor).then(function(result){
+  PDFJS.getDocument(content).then(pdf_table_extractor).then(function(result){
     // JSON output
     document.getElementById('json-result').innerText = JSON.stringify(result);
     // HTML output
@@ -63,4 +103,5 @@
         
     };
 });;
+};
 </script>
