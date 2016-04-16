@@ -101,6 +101,7 @@ var parse_content = function(content){
     // HTML output
     // CSV output
     $('#csv-select').html('');
+    $('#html-result').html('');
 
     while (page_tables = result.pageTables.shift()) {
         $('#html-result').append($('<h3></h3>').text('Page ' + page_tables.page));
