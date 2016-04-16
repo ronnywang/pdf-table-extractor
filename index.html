@@ -56,6 +56,24 @@ function handleDrop(e) {
     }
 }
 
+function handleFile(e) {
+    $('#json-result').text('Transfering file...');
+    var files = e.target.files;
+    var f = files[0];
+    {
+        var reader = new FileReader();
+        var name = f.name;
+        reader.onload = function(e) {
+            var data = e.target.result;
+            $('#json-result').text('Parsing PDF...');
+            parse_content(data); //btoa(arr));
+        };
+        reader.readAsArrayBuffer(f);
+    }
+}
+document.getElementById('pdf-file').addEventListener('change', handleFile, false);
+
+
 function handleDragover(e) {
     e.stopPropagation();
     e.preventDefault();
