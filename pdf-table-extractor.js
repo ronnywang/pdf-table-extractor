@@ -49,7 +49,7 @@ pdf_table_extractor = function(doc){
                               current_x = x;
                               current_y = y;
                           } else {
-                              throw ('constructPath ' + op);
+                              // throw ('constructPath ' + op);
                           }
                       }
                   } else if (PDFJS.OPS.setStrokeRGBColor == fn) {
