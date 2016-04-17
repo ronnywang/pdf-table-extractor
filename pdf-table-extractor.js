@@ -25,6 +25,7 @@ pdf_table_extractor = function(doc){
               var fillRGBColor = null;
               var current_x, current_y;
               var edges = [];
+              var line_max_width = 2;
 
               while (opList.fnArray.length) {
                   var fn = opList.fnArray.shift();
@@ -37,7 +38,7 @@ pdf_table_extractor = function(doc){
                               y = args[1].shift();
                               width = args[1].shift();
                               height = args[1].shift();
-                              if (Math.min(width, height) < 1) {
+                              if (Math.min(width, height) < line_max_width) {
                                   edges.push({y:y, x:x, width:width, height:height});
                               }
                           } else if (op == PDFJS.OPS.moveTo) {
@@ -77,11 +78,11 @@ pdf_table_extractor = function(doc){
               var current_height = 0;
               var lines = [];
               while (edge = edges1.shift()) {
-                  if (edge.width > 1) {
+                  if (edge.width > line_max_width) {
                       continue;
                   }
                   if (null === current_x || current_x != edge.x) {
-                      if (current_height > 1) {
+                      if (current_height > line_max_width) {
                           lines.push({top: current_y, bottom: current_y + current_height});
                       }
                       if (null !== current_x && lines.length) {
@@ -96,14 +97,14 @@ pdf_table_extractor = function(doc){
                   if (Math.abs(current_y + current_height - edge.y) < 10) {
                       current_height = edge.height + edge.y - current_y;
                   } else {
-                      if (current_height > 1) {
+                      if (current_height > line_max_width) {
                           lines.push({top: current_y, bottom: current_y + current_height});
                       }
                       current_y = edge.y;
                       current_height = edge.height;
                   }
               }
-              if (current_height > 1) {
+              if (current_height > line_max_width) {
                   lines.push({top: current_y, bottom: current_y + current_height});
               }
               verticles.push({x: current_x, lines: lines});
@@ -113,11 +114,11 @@ pdf_table_extractor = function(doc){
               current_y = null;
               var current_width = 0;
               while (edge = edges2.shift()) {
-                  if (edge.height > 1) {
+                  if (edge.height > line_max_width) {
                       continue;
                   }
                   if (null === current_y || current_y != edge.y) {
-                      if (current_width > 1) {
+                      if (current_width > line_max_width) {
                           lines.push({left: current_x, right: current_x + current_width});
                       }
                       if (null !== current_y && lines.length) {
@@ -132,14 +133,14 @@ pdf_table_extractor = function(doc){
                   if (Math.abs(current_x + current_width - edge.x) < 10) {
                       current_width = edge.width + edge.x - current_x;
                   } else {
-                      if (current_width > 1) {
+                      if (current_width > line_max_width) {
                           lines.push({left: current_x, right: current_x + current_width});
                       }
                       current_x = edge.x;
                       current_width = edge.width;
                   }
               }
-              if (current_width > 1) {
+              if (current_width > line_max_width) {
                   lines.push({left: current_x, right: current_x + current_width});
               }
               horizons.push({y: current_y, lines: lines});
