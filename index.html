@@ -112,6 +112,10 @@ $('#csv-select').change(function(){
     $('#csv-result').val(array_to_csv($('#csv-select option:selected').data('data').tables));
 });
 
+pdf_table_extractor_progress = function(result){
+    $('#json-result').text("Parsing PDF, progress: " + result.currentPages + " / " + result.numPages + " pages");
+};
+
 var parse_content = function(content){
   PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
 

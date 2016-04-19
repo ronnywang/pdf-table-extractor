@@ -1,9 +1,13 @@
 // modify from https://github.com/mozilla/pdf.js/blob/master/examples/node/pdf2svg.js
+pdf_table_extractor_progress = function(result){
+};
+
 pdf_table_extractor = function(doc){
   var numPages = doc.numPages;
   var result = {};
   result.pageTables = [];
   result.numPages = numPages;
+  result.currentPages = 0;
 
   var lastPromise = Promise.resolve(); // will be used to chain promises
   var loadPage = function (pageNum) {
@@ -333,6 +337,11 @@ pdf_table_extractor = function(doc){
                             width: verticles.length - 1,
                             height: horizons.length - 1,
                     });
+                }
+                result.currentPages ++;
+                console.log(result.currentPages);
+                if ('function' === typeof(pdf_table_extractor_progress)) {
+                    pdf_table_extractor_progress(result);
                 }
           });
       });
