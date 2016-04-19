@@ -118,6 +118,9 @@ pdf_table_extractor_progress = function(result){
 
 var parse_content = function(content){
   PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+  PDFJS.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
+  PDFJS.cMapPacked = true;
+
 
   PDFJS.getDocument(content).then(pdf_table_extractor).then(function(result){
     // JSON output
