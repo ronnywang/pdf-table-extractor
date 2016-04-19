@@ -339,7 +339,6 @@ pdf_table_extractor = function(doc){
                     });
                 }
                 result.currentPages ++;
-                console.log(result.currentPages);
                 if ('function' === typeof(pdf_table_extractor_progress)) {
                     pdf_table_extractor_progress(result);
                 }
