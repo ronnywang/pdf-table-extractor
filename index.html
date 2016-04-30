@@ -23,6 +23,8 @@ td {
     </div>
     <span>or click </span>
     <input type="file" id="pdf-file" />
+    <label><input type="checkbox" name="merge-table">Merge table</label>
+    <label><input type="checkbox" name="merge-table-remove-first-line">Merge table and remove first line</label>
 </div>
 
 <h2>JSON Result</h2>
@@ -132,7 +134,10 @@ var parse_content = function(content){
 
     var all_tables = [];
     while (page_tables = result.pageTables.shift()) {
-        $('#html-result').append($('<h3></h3>').text('Page ' + page_tables.page));
+        if (!$('input:checkbox[name="merge-table"]').is(':checked') && !$('input:checkbox[name="merge-table-remove-first-line"]').is(':checked')) {
+            $('#html-result').append($('<h3></h3>').text('Page ' + page_tables.page));
+        }
+
         $('#csv-select').append($('<option></option>').text('Page ' + page_tables.page).data('data', page_tables));
         all_tables = all_tables.concat(page_tables.tables);
 	table_dom = $('<table></table>').attr('border', 1);
@@ -141,6 +146,9 @@ var parse_content = function(content){
 	var merges = page_tables.merges;
 
         for (var r = 0; r < tables.length; r ++) {
+            if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page != 1 && r == 0) {
+                continue;
+            }
 	    tr_dom = $('<tr></tr>');
 	    for (var c = 0; c < tables[r].length; c ++) {
 		r_c = [r, c].join('-');
