@@ -93,7 +93,7 @@ pdf_table_extractor = function(doc){
                   } else if (PDFJS.OPS.setFillRGBColor == fn) {
                       fillRGBColor = args;
                   } else if (PDFJS.OPS.setLineWidth == fn) {
-                      lineWidth = args;
+                      lineWidth = args[0];
                   } else if (['eoFill'].indexOf(REVOPS[fn]) >= 0) {
                   } else if ('undefined' === typeof(showed[fn])) {
                       showed[fn] = REVOPS[fn];
