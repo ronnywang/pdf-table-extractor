@@ -122,13 +122,31 @@ pdf_table_extractor = function(doc){
               var current_y = null;
               var current_height = 0;
               var lines = [];
+              lines_add_verticle = function(lines, top, bottom){
+                  var hit = false;
+                  for (var i = 0; i < lines.length; i ++) {
+                      if (lines[i].bottom < top || lines[i].top > bottom) {
+                          continue;
+                      }
+                      hit = true;
+                      lines[i].top = Math.min(lines[i].top, top);
+                      lines[i].bottom = Math.max(lines[i].bottom, bottom);
+                      break;
+                  }
+                  if (!hit) {
+                      lines.push({top: top, bottom: bottom});
+                  }
+              };
               while (edge = edges1.shift()) {
+                  // skip horizon lines
                   if (edge.width > line_max_width) {
                       continue;
                   }
-                  if (null === current_x || current_x != edge.x) {
+
+                  // new verticle lines
+                  if (null === current_x || edge.x - current_x > line_max_width) {
                       if (current_height > line_max_width) {
-                          lines.push({top: current_y, bottom: current_y + current_height});
+                          lines_add_verticle(lines, current_y, current_y + current_height);
                       }
                       if (null !== current_x && lines.length) {
                           verticles.push({x: current_x, lines: lines});
@@ -143,14 +161,14 @@ pdf_table_extractor = function(doc){
                       current_height = edge.height + edge.y - current_y;
                   } else {
                       if (current_height > line_max_width) {
-                          lines.push({top: current_y, bottom: current_y + current_height});
+                          lines_add_verticle(lines, current_y, current_y + current_height);
                       }
                       current_y = edge.y;
                       current_height = edge.height;
                   }
               }
               if (current_height > line_max_width) {
-                  lines.push({top: current_y, bottom: current_y + current_height});
+                  lines_add_verticle(lines, current_y, current_y + current_height);
               }
               verticles.push({x: current_x, lines: lines});
 
@@ -158,13 +176,29 @@ pdf_table_extractor = function(doc){
               current_x = null;
               current_y = null;
               var current_width = 0;
+              lines_add_horizon = function(lines, left, right){
+                  var hit = false;
+                  for (var i = 0; i < lines.length; i ++) {
+                      if (lines[i].right < left || lines[i].left > right) {
+                          continue;
+                      }
+                      hit = true;
+                      lines[i].left = Math.min(lines[i].left, left);
+                      lines[i].right = Math.max(lines[i].right, right);
+                      break;
+                  }
+                  if (!hit) {
+                      lines.push({left: left, right: right});
+                  }
+              };
+
               while (edge = edges2.shift()) {
                   if (edge.height > line_max_width) {
                       continue;
                   }
-                  if (null === current_y || current_y != edge.y) {
+                  if (null === current_y || edge.y - current_y > line_max_width) {
                       if (current_width > line_max_width) {
-                          lines.push({left: current_x, right: current_x + current_width});
+                          lines_add_horizon(lines, current_x, current_x + current_width);
                       }
                       if (null !== current_y && lines.length) {
                           horizons.push({y: current_y, lines: lines});
@@ -179,14 +213,14 @@ pdf_table_extractor = function(doc){
                       current_width = edge.width + edge.x - current_x;
                   } else {
                       if (current_width > line_max_width) {
-                          lines.push({left: current_x, right: current_x + current_width});
+                          lines_add_horizon(lines, current_x, current_x + current_width);
                       }
                       current_x = edge.x;
                       current_width = edge.width;
                   }
               }
               if (current_width > line_max_width) {
-                  lines.push({left: current_x, right: current_x + current_width});
+                  lines_add_horizon(lines, current_x, current_x + current_width);
               }
               horizons.push({y: current_y, lines: lines});
 
