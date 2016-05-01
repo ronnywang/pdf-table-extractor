@@ -9,6 +9,24 @@ pdf_table_extractor = function(doc){
   result.numPages = numPages;
   result.currentPages = 0;
 
+  var transform_fn = function(m1, m2) {
+    return [
+      m1[0] * m2[0] + m1[2] * m2[1],
+      m1[1] * m2[0] + m1[3] * m2[1],
+      m1[0] * m2[2] + m1[2] * m2[3],
+      m1[1] * m2[2] + m1[3] * m2[3],
+      m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+      m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+    ];
+  };
+
+  var applyTransform_fn = function(p, m) {
+    var xt = p[0] * m[0] + p[1] * m[2] + m[4];
+    var yt = p[0] * m[1] + p[1] * m[3] + m[5];
+    return [xt, yt];
+  };
+
+
   var lastPromise = Promise.resolve(); // will be used to chain promises
   var loadPage = function (pageNum) {
     return doc.getPage(pageNum).then(function (page) {
@@ -16,6 +34,8 @@ pdf_table_extractor = function(doc){
       var horizons = [];
       var merges = {};
       var merge_alias = {};
+      var transformMatrix = [1,0,0,1,0,0];;
+      var transformStack = [];
 
       return page.getOperatorList().then(function (opList) {
               // Get rectangle first
@@ -43,7 +63,7 @@ pdf_table_extractor = function(doc){
                               width = args[1].shift();
                               height = args[1].shift();
                               if (Math.min(width, height) < line_max_width) {
-                                  edges.push({y:y, x:x, width:width, height:height});
+                                  edges.push({y:y, x:x, width:width, height:height, transform: transformMatrix});
                               }
                           } else if (op == PDFJS.OPS.moveTo) {
                               current_x = args[1].shift();
@@ -51,12 +71,23 @@ pdf_table_extractor = function(doc){
                           } else if (op == PDFJS.OPS.lineTo) {
                               x = args[1].shift();
                               y = args[1].shift();
+                              if (current_x == x) {
+                                  edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
+                              } else if (current_y == y) {
+                                  edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+                              }
                               current_x = x;
                               current_y = y;
                           } else {
                               // throw ('constructPath ' + op);
                           }
                       }
+                  } else if (PDFJS.OPS.save == fn) {
+                      transformStack.push(transformMatrix);
+                  } else if (PDFJS.OPS.restore == fn ){
+                      transformMatrix = transformStack.pop();
+                  } else if (PDFJS.OPS.transform == fn) {
+                      transformMatrix = transform_fn(transformMatrix, args);
                   } else if (PDFJS.OPS.setStrokeRGBColor == fn) {
                       strokeRGBColor = args;
                   } else if (PDFJS.OPS.setFillRGBColor == fn) {
@@ -70,6 +101,16 @@ pdf_table_extractor = function(doc){
                   }
               }
 
+              edges = edges.map(function(edge){
+                      var point1 = applyTransform_fn([edge.x, edge.y], edge.transform);
+                      var point2 = applyTransform_fn([edge.x + edge.width, edge.y + edge.height], edge.transform);
+                      return {
+                        x: Math.min(point1[0], point2[0]),
+                        y: Math.min(point1[1], point2[1]),
+                        width: Math.abs(point1[0] - point2[0]),
+                        height: Math.abs(point1[1] - point2[1]),
+                      };
+              });
               // merge rectangle to verticle lines and horizon lines
               edges1 = JSON.parse(JSON.stringify(edges));
               edges1.sort(function(a, b){ return (a.x - b.x) || (a.y - b.y); });
