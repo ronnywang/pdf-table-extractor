@@ -179,6 +179,11 @@ pdf_table_extractor = function(doc){
               if (current_height > line_max_width) {
                   lines = lines_add_verticle(lines, current_y, current_y + current_height);
               }
+
+              // no table
+              if (current_x === null) {
+                  return {};
+              }
               verticles.push({x: current_x, lines: lines});
 
               // Get horizon lines
@@ -253,10 +258,21 @@ pdf_table_extractor = function(doc){
               // handle merge cells
               x_list = verticles.map(function(a){ return a.x; });
 
+              // check top_out and bottom_out
+              var y_list = horizons.map(function(a){ return a.y; }).sort(function(a, b) { return b - a; });
+              var y_max = verticles
+                  .map(function(verticle) { return verticle.lines[0].bottom; })
+                  .sort().reverse()[0];
+              var y_min = verticles
+                  .map(function(verticle) { return verticle.lines[verticle.lines.length - 1].top; })
+                  .sort()[0];
+              var top_out = search_index(y_min, y_list) == -1 ? 1 : 0;
+              var bottom_out = search_index(y_max, y_list) == -1 ? 1 : 0;
+
               var verticle_merges = {};
               // skip the 1st lines and final lines
-              for (var r = 0; r < horizons.length - 2; r ++) {
-                  hor = horizons[horizons.length - r - 2];
+              for (var r = 0; r < horizons.length - 2 + top_out + bottom_out; r ++) {
+                  hor = horizons[bottom_out + horizons.length - r - 2];
                   lines = hor.lines.slice(0);
                   col = search_index(lines[0].left, x_list);
                   if (col != 0) {
@@ -274,8 +290,8 @@ pdf_table_extractor = function(doc){
                       }
                       col = right_col;
                   }
-                  if (col != verticles.length - 1) {
-                      for (var c = col; c < verticles.length - 1; c ++) {
+                  if (col != verticles.length - 1 + top_out) {
+                      for (var c = col; c < verticles.length - 1 + top_out; c ++) {
                           verticle_merges[[r, c].join('-')] = {row: r, col: c, width: 1, height: 2};
                       }
                   }
@@ -299,11 +315,11 @@ pdf_table_extractor = function(doc){
               }
 
               var horizon_merges = {};
-              y_list = horizons.map(function(a){ return a.y; }).sort(function(a, b) { return b - a; });
+
               for (var c = 0; c < verticles.length - 2; c ++) {
                   ver = verticles[c + 1];
                   lines = ver.lines.slice(0);
-                  row = search_index(lines[0].bottom, y_list);
+                  row = search_index(lines[0].bottom, y_list) + bottom_out;
                   if (row != 0) {
                       for (var r = 0; r < row; r ++) {
                           horizon_merges[[r, c].join('-')] = {row: r, col: c, width: 2, height: 1};
@@ -311,7 +327,12 @@ pdf_table_extractor = function(doc){
                   }
                   while (line = lines.shift()) {
                       top_row = search_index(line.top, y_list);
-                      bottom_row = search_index(line.bottom, y_list);
+                      if (top_row == -1) {
+                          top_row = y_list.length + bottom_out;
+                      } else {
+                          top_row += bottom_out;
+                      }
+                      bottom_row = search_index(line.bottom, y_list) + bottom_out;
                       if (bottom_row != row) {
                           for (var r = bottom_row; r < row; r ++) {
                               horizon_merges[[r, c].join('-')] = {row: r, col: c, width: 2, height: 1};
@@ -319,11 +340,17 @@ pdf_table_extractor = function(doc){
                       }
                       row = top_row;
                   }
-                  if (row != horizons.length - 1) {
-                      for (var r = row; r < horizons.length - 1; r ++) {
+                  if (row != horizons.length - 1 + bottom_out + top_out) {
+                      for (var r = row; r < horizons.length - 1 + bottom_out + top_out; r ++) {
                           horizon_merges[[r, c].join('-')] = {row: r, col: c, width: 2, height: 1};
                       }
                   }
+              }
+              if (top_out) {
+                  horizons.unshift({y: y_min, lines: []});
+              }
+              if (bottom_out) {
+                  horizons.push({y:y_max, lines:[]});
               }
 
               while (true) {
