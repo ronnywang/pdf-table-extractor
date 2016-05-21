@@ -181,7 +181,7 @@ pdf_table_extractor = function(doc){
               }
 
               // no table
-              if (current_x === null) {
+              if (current_x === null || lines.length == 0) {
                   return {};
               }
               verticles.push({x: current_x, lines: lines});
@@ -243,6 +243,10 @@ pdf_table_extractor = function(doc){
               }
               if (current_width > line_max_width) {
                   lines = lines_add_horizon(lines, current_x, current_x + current_width);
+              }
+              // no table
+              if (current_y === null || lines.length == 0) {
+                  return {};
               }
               horizons.push({y: current_y, lines: lines});
 
