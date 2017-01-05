@@ -139,7 +139,7 @@ var parse_content = function(content){
         }
 
         $('#csv-select').append($('<option></option>').text('Page ' + page_tables.page).data('data', page_tables));
-        if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked')) {
+        if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page > 1) {
             all_tables = all_tables.concat(page_tables.tables.slice(1));
         } else {
             all_tables = all_tables.concat(page_tables.tables);
