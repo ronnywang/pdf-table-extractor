@@ -36,7 +36,7 @@ td {
 <div id="html-result">
 </div>
 
-<script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+<script src="build/pdf.js"></script>
 <script src="pdf-table-extractor.js"></script>
 <script id="script">
 var drop = document.getElementById('drop');
@@ -119,7 +119,7 @@ pdf_table_extractor_progress = function(result){
 };
 
 var parse_content = function(content){
-  PDFJS.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
+  PDFJS.workerSrc = 'build/pdf.worker.js';
   PDFJS.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
   PDFJS.cMapPacked = true;
 
