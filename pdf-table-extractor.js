@@ -50,6 +50,7 @@ pdf_table_extractor = function(doc){
               var current_x, current_y;
               var edges = [];
               var line_max_width = 2;
+              var lineWidth = null;
 
               while (opList.fnArray.length) {
                   var fn = opList.fnArray.shift();
@@ -71,10 +72,29 @@ pdf_table_extractor = function(doc){
                           } else if (op == pdfjsLib.OPS.lineTo) {
                               x = args[1].shift();
                               y = args[1].shift();
-                              if (current_x == x) {
-                                  edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
-                              } else if (current_y == y) {
-                                  edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+
+                              if(lineWidth == null) {
+                                if (current_x == x) {
+                                    edges.push({
+                                        y: Math.min(y, current_y), 
+                                        x: Math.min(x, current_x),
+                                        height: Math.abs(y - current_y),
+                                        transform: transformMatrix
+                                    });
+                                } else if (current_y == y) {
+                                    edges.push({
+                                        x: Math.min(x, current_x), 
+                                        y: Math.min(y, current_y),
+                                        width: Math.abs(x - current_x), 
+                                        transform: transformMatrix
+                                    });
+                                }
+                              } else {
+                                if (current_x == x) {
+                                    edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
+                                } else if (current_y == y) {
+                                    edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+                                }
                               }
                               current_x = x;
                               current_y = y;
