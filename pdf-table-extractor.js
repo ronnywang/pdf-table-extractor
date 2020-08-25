@@ -41,8 +41,8 @@ pdf_table_extractor = function(doc){
               // Get rectangle first
               var showed = {};
               var REVOPS = [];
-              for (var op in PDFJS.OPS) {
-                  REVOPS[PDFJS.OPS[op]] = op;
+              for (var op in pdfjsLib.OPS) {
+                  REVOPS[pdfjsLib.OPS[op]] = op;
               }
 
               var strokeRGBColor = null;
@@ -50,14 +50,15 @@ pdf_table_extractor = function(doc){
               var current_x, current_y;
               var edges = [];
               var line_max_width = 2;
+              var lineWidth = null;
 
               while (opList.fnArray.length) {
                   var fn = opList.fnArray.shift();
                   var args = opList.argsArray.shift();
-                  if (PDFJS.OPS.constructPath == fn) {
+                  if (pdfjsLib.OPS.constructPath == fn) {
                       while (args[0].length) {
                           op = args[0].shift();
-                          if (op == PDFJS.OPS.rectangle) {
+                          if (op == pdfjsLib.OPS.rectangle) {
                               x = args[1].shift();
                               y = args[1].shift();
                               width = args[1].shift();
@@ -65,16 +66,35 @@ pdf_table_extractor = function(doc){
                               if (Math.min(width, height) < line_max_width) {
                                   edges.push({y:y, x:x, width:width, height:height, transform: transformMatrix});
                               }
-                          } else if (op == PDFJS.OPS.moveTo) {
+                          } else if (op == pdfjsLib.OPS.moveTo) {
                               current_x = args[1].shift();
                               current_y = args[1].shift();
-                          } else if (op == PDFJS.OPS.lineTo) {
+                          } else if (op == pdfjsLib.OPS.lineTo) {
                               x = args[1].shift();
                               y = args[1].shift();
-                              if (current_x == x) {
-                                  edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
-                              } else if (current_y == y) {
-                                  edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+
+                              if(lineWidth == null) {
+                                if (current_x == x) {
+                                    edges.push({
+                                        y: Math.min(y, current_y), 
+                                        x: Math.min(x, current_x),
+                                        height: Math.abs(y - current_y),
+                                        transform: transformMatrix
+                                    });
+                                } else if (current_y == y) {
+                                    edges.push({
+                                        x: Math.min(x, current_x), 
+                                        y: Math.min(y, current_y),
+                                        width: Math.abs(x - current_x), 
+                                        transform: transformMatrix
+                                    });
+                                }
+                              } else {
+                                if (current_x == x) {
+                                    edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
+                                } else if (current_y == y) {
+                                    edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+                                }
                               }
                               current_x = x;
                               current_y = y;
@@ -82,17 +102,17 @@ pdf_table_extractor = function(doc){
                               // throw ('constructPath ' + op);
                           }
                       }
-                  } else if (PDFJS.OPS.save == fn) {
+                  } else if (pdfjsLib.OPS.save == fn) {
                       transformStack.push(transformMatrix);
-                  } else if (PDFJS.OPS.restore == fn ){
+                  } else if (pdfjsLib.OPS.restore == fn ){
                       transformMatrix = transformStack.pop();
-                  } else if (PDFJS.OPS.transform == fn) {
+                  } else if (pdfjsLib.OPS.transform == fn) {
                       transformMatrix = transform_fn(transformMatrix, args);
-                  } else if (PDFJS.OPS.setStrokeRGBColor == fn) {
+                  } else if (pdfjsLib.OPS.setStrokeRGBColor == fn) {
                       strokeRGBColor = args;
-                  } else if (PDFJS.OPS.setFillRGBColor == fn) {
+                  } else if (pdfjsLib.OPS.setFillRGBColor == fn) {
                       fillRGBColor = args;
-                  } else if (PDFJS.OPS.setLineWidth == fn) {
+                  } else if (pdfjsLib.OPS.setLineWidth == fn) {
                       lineWidth = args[0];
                   } else if (['eoFill'].indexOf(REVOPS[fn]) >= 0) {
                   } else if ('undefined' === typeof(showed[fn])) {

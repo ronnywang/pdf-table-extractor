@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <meta charset="UTF-8">
   <title>PDF tables extractor</title>
   <style>
@@ -119,12 +119,13 @@ pdf_table_extractor_progress = function(result){
 };
 
 var parse_content = function(content){
-  PDFJS.workerSrc = 'build/pdf.worker.js';
-  PDFJS.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
-  PDFJS.cMapPacked = true;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'build/pdf.worker.js';
+    pdfjsLib.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
+    pdfjsLib.cMapPacked = true;
 
+    var loadingTask = pdfjsLib.getDocument(content);
 
-  PDFJS.getDocument(content).then(pdf_table_extractor).then(function(result){
+    loadingTask.promise.then(pdf_table_extractor).then(function(result) {
     // JSON output
     document.getElementById('json-result').innerText = JSON.stringify(result);
     // HTML output
