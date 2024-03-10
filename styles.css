@@ -1,0 +1,18 @@
+html{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.gitimg{
+    position: absolute; 
+    top: 0;
+    right: 0;
+    border: 0;
+    height: 50px;
+}
+
+.fork{
+    position: absolute; 
+    top: 0;
+    right: 0;
+    border: 0;
+}
