@@ -55,34 +55,34 @@ html {
 
 header {
     text-align: center;
-    /* Centers everything within the header */
+    
 }
 
 .logo-title-container {
     display: flex;
-    /* Enable flexbox for easy alignment */
+    
     justify-content: center;
-    /* Center elements horizontally */
+    
     align-items: center;
-    /* Center elements vertically */
+    
 }
 
 .logo {
     height: 5rem;
-    /* Maintain the same height as before */
+    
     margin-right: 10px;
-    /* Add some spacing between logo and title */
+    
 }
 
 #pdf-file {
-    display: none; /* Or use visibility: hidden; */
+    display: none;
   }
   
 
 .custom-file-upload {
     display: inline-block;
     background-color: #7b38d8;
-    /* Choose your color */
+    
     color: white;
     padding: 10px 20px;
     border: none;
