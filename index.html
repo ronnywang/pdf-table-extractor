@@ -1,185 +1,210 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <meta charset="UTF-8">
-  <title>PDF tables extractor</title>
-  <style>
-td {
-        white-space: pre;
-}
-  </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>PDF tables extractor</title>
+    <style>
+        td {
+            white-space: pre;
+        }
+    </style>
 </head>
+
 <body>
-<a href="https://github.com/ronnywang/pdf-table-extractor"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
 
-<h1>PDF tables extractor</h1>
-<p>Sample: <a href="samples/pta_10229_131308_94274.pdf">samples/pta_10229_131308_94274.pdf</a></p>
-<p>Sample: <a href="samples/rid-01.pdf">samples/rid-01.pdf</a></p>
-
-<div style="border:1px solid">
-    <div id="drop">
-        <span>Drop PDF file here</span>
+    <div class="logo-title-container">
+        <img class="logo" src="logo.png" alt="Your Logo">
+        <h1 style="text-align: center;">PDF Tables Extractor</h1>
+        <a href="https://github.com/ronnywang/pdf-table-extractor"><img class="gitimg" src="img.jpg" alt="Fork me on GitHub"
+            data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
     </div>
-    <span>or click </span>
-    <input type="file" id="pdf-file" />
-    <label><input type="checkbox" name="merge-table">Merge table</label>
-    <label><input type="checkbox" name="merge-table-remove-first-line">Merge table and remove first line</label>
-</div>
-
-<h2>JSON Result</h2>
-<textarea id="json-result" style="width: 100%; height: 200px"></textarea>
-<h2>CSV Result</h2>
-<select id="csv-select"></select>
-<textarea id="csv-result" style="width: 100%; height: 150px"></textarea>
-<h2>HTML Result:</h2>
-<div id="html-result">
-</div>
-
-<script src="build/pdf.js"></script>
-<script src="pdf-table-extractor.js"></script>
-<script id="script">
-var drop = document.getElementById('drop');
-function handleDrop(e) {
-    $('#json-result').text('Transfering file...');
-    e.stopPropagation();
-    e.preventDefault();
-    var files = e.dataTransfer.files;
-    var f = files[0];
-    {
-        var reader = new FileReader();
-        var name = f.name;
-        reader.onload = function(e) {
-            var data = e.target.result;
-            $('#json-result').text('Parsing PDF...');
-            parse_content(data); //btoa(arr));
-        };
-        reader.readAsArrayBuffer(f);
-    }
-}
-
-function handleFile(e) {
-    $('#json-result').text('Transfering file...');
-    var files = e.target.files;
-    var f = files[0];
-    {
-        var reader = new FileReader();
-        var name = f.name;
-        reader.onload = function(e) {
-            var data = e.target.result;
-            $('#json-result').text('Parsing PDF...');
-            parse_content(data); //btoa(arr));
-        };
-        reader.readAsArrayBuffer(f);
-    }
-}
-document.getElementById('pdf-file').addEventListener('change', handleFile, false);
 
 
-function handleDragover(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-}
-
-if(drop.addEventListener) {
-    drop.addEventListener('dragenter', handleDragover, false);
-    drop.addEventListener('dragover', handleDragover, false);
-    drop.addEventListener('drop', handleDrop, false);
-}
 
 
-  //
-  // If absolute URL from the remote server is provided, configure the CORS
-  // header on that server.
-  //
 
-var array_to_csv = function(tables){
-    return tables.map(function(rows) {
-        return rows.map(function(v){
-                if ('undefined' === typeof(v) || v === null) {
-                    return v;
-                }
-                if (v.indexOf('"')) {
-                    v = v.replace(/"/g, '""');
-                }
-                if (v.indexOf('"') >= 0 || v.indexOf("\n") >= 0 || v.indexOf(",") >= 0) {
-                    v = '"' + v + '"';
-                }
-                return v;
-        }).join(',');
-    }).join("\n");
-};
-$('#csv-select').change(function(){
-    $('#csv-result').val(array_to_csv($('#csv-select option:selected').data('data').tables));
-});
 
-pdf_table_extractor_progress = function(result){
-    $('#json-result').text("Parsing PDF, progress: " + result.currentPages + " / " + result.numPages + " pages");
-};
+    <p class="text">Tired of manually copying data from PDFs? Reclaim your time! Our PDF table extractor effortlessly
+        pulls tables from your PDFs, delivering accurate data in JSON, CSV, or HTML - ready for analysis!</p>
+    <div class="dropbox">
+        <div id="drop">
+            <br>
+            <br>
+            <span>📂Drop PDF file here</span>
+        </div>
+        <br>
+        <label for="pdf-file" class="custom-file-upload">
+            Click to choose
+          </label>
+          <input type="file" id="pdf-file" />
+          
+        <br>
 
-var parse_content = function(content){
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'build/pdf.worker.js';
-    pdfjsLib.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
-    pdfjsLib.cMapPacked = true;
+        <h2>Or Choose from these samples👇</h2>
+        <p>Sample: <a href="samples/pta_10229_131308_94274.pdf">Sample No.1</a></p>
+        <p>Sample: <a href="samples/rid-01.pdf">Sample No.2</a></p>
 
-    var loadingTask = pdfjsLib.getDocument(content);
 
-    loadingTask.promise.then(pdf_table_extractor).then(function(result) {
-    // JSON output
-    document.getElementById('json-result').innerText = JSON.stringify(result);
-    // HTML output
-    // CSV output
-    $('#csv-select').html('');
-    $('#html-result').html('');
+        <label><input type="checkbox" name="merge-table">Merge table</label>
+        <label><input type="checkbox" name="merge-table-remove-first-line">Merge table and remove first line</label>
+    </div>
 
-    var all_tables = [];
-    while (page_tables = result.pageTables.shift()) {
-        if (!$('input:checkbox[name="merge-table"]').is(':checked') && !$('input:checkbox[name="merge-table-remove-first-line"]').is(':checked')) {
-            $('#html-result').append($('<h3></h3>').text('Page ' + page_tables.page));
-        }
+    <h2 class="json">👉JSON Result</h2>
+    <textarea id="json-result" style="width: 100%; height: 200px"></textarea>
+    <h2>👉CSV Result</h2>
+    <select id="csv-select"></select>
+    <textarea id="csv-result" style="width: 100%; height: 150px"></textarea>
+    <h2>👉HTML Result</h2>
+    <div id="html-result">
+    </div>
 
-        $('#csv-select').append($('<option></option>').text('Page ' + page_tables.page).data('data', page_tables));
-        if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page > 1) {
-            all_tables = all_tables.concat(page_tables.tables.slice(1));
-        } else {
-            all_tables = all_tables.concat(page_tables.tables);
-        }
-	table_dom = $('<table></table>').attr('border', 1);
-	var tables = page_tables.tables;
-	var merge_alias = page_tables.merge_alias;
-	var merges = page_tables.merges;
-
-        for (var r = 0; r < tables.length; r ++) {
-            if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page != 1 && r == 0) {
-                continue;
+    <script src="build/pdf.js"></script>
+    <script src="pdf-table-extractor.js"></script>
+    <script id="script">
+        var drop = document.getElementById('drop');
+        function handleDrop(e) {
+            $('#json-result').text('Transfering file...');
+            e.stopPropagation();
+            e.preventDefault();
+            var files = e.dataTransfer.files;
+            var f = files[0];
+            {
+                var reader = new FileReader();
+                var name = f.name;
+                reader.onload = function (e) {
+                    var data = e.target.result;
+                    $('#json-result').text('Parsing PDF...');
+                    parse_content(data); //btoa(arr));
+                };
+                reader.readAsArrayBuffer(f);
             }
-	    tr_dom = $('<tr></tr>');
-	    for (var c = 0; c < tables[r].length; c ++) {
-		r_c = [r, c].join('-');
-                if (merge_alias[r_c]) {
-		    continue;
-		}
+        }
 
-                td_dom = $('<td></td>');
-		if (merges[r_c]) {
-		    if (merges[r_c].width > 1) {
-			td_dom.attr('colspan', merges[r_c].width);
-		    }
-		    if (merges[r_c].height > 1) {
-			td_dom.attr('rowspan', merges[r_c].height);
-		    }
-		}
-		td_dom.text(tables[r][c]);
-		tr_dom.append(td_dom);
-	    }
-	    table_dom.append(tr_dom);
-	}
-	$('#html-result').append(table_dom);
-        
-    };
-    $('#csv-select').append($('<option></option>').text('all').data('data', {'tables': all_tables}));
-    $('#csv-select').change();
-});;
-};
-</script>
+        function handleFile(e) {
+            $('#json-result').text('Transfering file...');
+            var files = e.target.files;
+            var f = files[0];
+            {
+                var reader = new FileReader();
+                var name = f.name;
+                reader.onload = function (e) {
+                    var data = e.target.result;
+                    $('#json-result').text('Parsing PDF...');
+                    parse_content(data); //btoa(arr));
+                };
+                reader.readAsArrayBuffer(f);
+            }
+        }
+        document.getElementById('pdf-file').addEventListener('change', handleFile, false);
+
+
+        function handleDragover(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        if (drop.addEventListener) {
+            drop.addEventListener('dragenter', handleDragover, false);
+            drop.addEventListener('dragover', handleDragover, false);
+            drop.addEventListener('drop', handleDrop, false);
+        }
+
+
+        //
+        // If absolute URL from the remote server is provided, configure the CORS
+        // header on that server.
+        //
+
+        var array_to_csv = function (tables) {
+            return tables.map(function (rows) {
+                return rows.map(function (v) {
+                    if ('undefined' === typeof (v) || v === null) {
+                        return v;
+                    }
+                    if (v.indexOf('"')) {
+                        v = v.replace(/"/g, '""');
+                    }
+                    if (v.indexOf('"') >= 0 || v.indexOf("\n") >= 0 || v.indexOf(",") >= 0) {
+                        v = '"' + v + '"';
+                    }
+                    return v;
+                }).join(',');
+            }).join("\n");
+        };
+        $('#csv-select').change(function () {
+            $('#csv-result').val(array_to_csv($('#csv-select option:selected').data('data').tables));
+        });
+
+        pdf_table_extractor_progress = function (result) {
+            $('#json-result').text("Parsing PDF, progress: " + result.currentPages + " / " + result.numPages + " pages");
+        };
+
+        var parse_content = function (content) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'build/pdf.worker.js';
+            pdfjsLib.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
+            pdfjsLib.cMapPacked = true;
+
+            var loadingTask = pdfjsLib.getDocument(content);
+
+            loadingTask.promise.then(pdf_table_extractor).then(function (result) {
+                // JSON output
+                document.getElementById('json-result').innerText = JSON.stringify(result);
+                // HTML output
+                // CSV output
+                $('#csv-select').html('');
+                $('#html-result').html('');
+
+                var all_tables = [];
+                while (page_tables = result.pageTables.shift()) {
+                    if (!$('input:checkbox[name="merge-table"]').is(':checked') && !$('input:checkbox[name="merge-table-remove-first-line"]').is(':checked')) {
+                        $('#html-result').append($('<h3></h3>').text('Page ' + page_tables.page));
+                    }
+
+                    $('#csv-select').append($('<option></option>').text('Page ' + page_tables.page).data('data', page_tables));
+                    if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page > 1) {
+                        all_tables = all_tables.concat(page_tables.tables.slice(1));
+                    } else {
+                        all_tables = all_tables.concat(page_tables.tables);
+                    }
+                    table_dom = $('<table></table>').attr('border', 1);
+                    var tables = page_tables.tables;
+                    var merge_alias = page_tables.merge_alias;
+                    var merges = page_tables.merges;
+
+                    for (var r = 0; r < tables.length; r++) {
+                        if ($('input:checkbox[name="merge-table-remove-first-line"]').is(':checked') && page_tables.page != 1 && r == 0) {
+                            continue;
+                        }
+                        tr_dom = $('<tr></tr>');
+                        for (var c = 0; c < tables[r].length; c++) {
+                            r_c = [r, c].join('-');
+                            if (merge_alias[r_c]) {
+                                continue;
+                            }
+
+                            td_dom = $('<td></td>');
+                            if (merges[r_c]) {
+                                if (merges[r_c].width > 1) {
+                                    td_dom.attr('colspan', merges[r_c].width);
+                                }
+                                if (merges[r_c].height > 1) {
+                                    td_dom.attr('rowspan', merges[r_c].height);
+                                }
+                            }
+                            td_dom.text(tables[r][c]);
+                            tr_dom.append(td_dom);
+                        }
+                        table_dom.append(tr_dom);
+                    }
+                    $('#html-result').append(table_dom);
+
+                };
+                $('#csv-select').append($('<option></option>').text('all').data('data', { 'tables': all_tables }));
+                $('#csv-select').change();
+            });;
+        };
+    </script>

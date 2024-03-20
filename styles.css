@@ -1,0 +1,92 @@
+html {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 5rem;
+}
+
+
+.gitimg {
+    position: absolute;
+    top: 0;
+    padding-top: 1rem;
+    right: 0;
+    border: 0;
+    height: 50px;
+}
+
+.fork {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
+
+.dropbox {
+    border: 1px solid;
+
+    height: 7rem;
+    width: 70%;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 3rem;
+
+}
+
+#drop {
+    height: 7rem;
+
+}
+
+.json {
+    padding-top: 13rem;
+}
+
+.text {
+    text-align: center;
+    width: 70%;
+    margin: 0 auto;
+    padding-top: 3rem;
+}
+
+.logo {
+    height: 5rem;
+}
+
+header {
+    text-align: center;
+    
+}
+
+.logo-title-container {
+    display: flex;
+    
+    justify-content: center;
+    
+    align-items: center;
+    
+}
+
+.logo {
+    height: 5rem;
+    
+    margin-right: 10px;
+    
+}
+
+#pdf-file {
+    display: none;
+  }
+  
+
+.custom-file-upload {
+    display: inline-block;
+    background-color: tomato;
+    
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: grab;
+    text-align: center;
+}
