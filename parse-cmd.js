@@ -8,7 +8,7 @@ require('./pdf.js/examples/node/domstubs.js');
 require('./pdf-table-extractor.js');
 
 // Run `gulp dist` to generate 'pdfjs-dist' npm package files.
-PDFJS = require('./pdf.js/build/dist');
+PDFJS = require('./pdf.js/build/generic/build/pdf.js');
 PDFJS.cMapUrl = './pdf.js/build/generic/web/cmaps/';
 PDFJS.cMapPacked = true;
 
@@ -19,9 +19,10 @@ var data = new Uint8Array(fs.readFileSync(pdfPath));
 
 // Will be using promises to load document, pages and misc data instead of
 // callback.
-PDFJS.getDocument(data).then(pdf_table_extractor).then(function (result) {
+PDFJS.getDocument(data).promise.then(pdf_table_extractor).then(function (result) {
     console.log(JSON.stringify(result));
+    // fs.writeFileSync('output.json', JSON.stringify(result));
 }, function (err) {
-    console.error('Error: ' + err);
+    console.error('Error: ' + err, err.stack);
 });
 

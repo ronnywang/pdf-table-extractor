@@ -1,3 +1,5 @@
+const pdfjsLib = require('./pdf.js/build/generic/build/pdf.js');
+
 // modify from https://github.com/mozilla/pdf.js/blob/master/examples/node/pdf2svg.js
 pdf_table_extractor_progress = function(result){
 };
