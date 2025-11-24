@@ -1,5 +1,3 @@
-const pdfjsLib = require('./pdf.js/build/generic/build/pdf.js');
-
 // modify from https://github.com/mozilla/pdf.js/blob/master/examples/node/pdf2svg.js
 pdf_table_extractor_progress = function(result){
 };
@@ -58,50 +56,56 @@ pdf_table_extractor = function(doc){
                   var fn = opList.fnArray.shift();
                   var args = opList.argsArray.shift();
                   if (pdfjsLib.OPS.constructPath == fn) {
-                      while (args[0].length) {
-                          op = args[0].shift();
-                          if (op == pdfjsLib.OPS.rectangle) {
-                              x = args[1].shift();
-                              y = args[1].shift();
-                              width = args[1].shift();
-                              height = args[1].shift();
-                              if (Math.min(width, height) < line_max_width) {
-                                  edges.push({y:y, x:x, width:width, height:height, transform: transformMatrix});
-                              }
-                          } else if (op == pdfjsLib.OPS.moveTo) {
-                              current_x = args[1].shift();
-                              current_y = args[1].shift();
-                          } else if (op == pdfjsLib.OPS.lineTo) {
-                              x = args[1].shift();
-                              y = args[1].shift();
+                      for (var ops of args[1]) {
+                          ops = Array.from(ops);
+                          while (ops.length) {
+                              op = ops.shift();
+                              if (op == pdfjsLib.OPS.rectangle) {
+                                  throw('rectangle not expected');
+                                  x = ops.shift();
+                                  y = ops.shift();
+                                  width = ops.shift();
+                                  height = ops.shift();
+                                  if (Math.min(width, height) < line_max_width) {
+                                      edges.push({y:y, x:x, width:width, height:height, transform: transformMatrix});
+                                  }
+                              } else if (op == 0) { // pdfjsLib.OPS.moveTo
+                                  current_x = ops.shift();
+                                  current_y = ops.shift();
+                              } else if (op == 1) { // pdfjsLib.OPS.lineTo
+                                  x = ops.shift();
+                                  y = ops.shift();
 
-                              if(lineWidth == null) {
-                                if (current_x == x) {
-                                    edges.push({
-                                        y: Math.min(y, current_y), 
-                                        x: Math.min(x, current_x),
-                                        height: Math.abs(y - current_y),
-                                        transform: transformMatrix
-                                    });
-                                } else if (current_y == y) {
-                                    edges.push({
-                                        x: Math.min(x, current_x), 
-                                        y: Math.min(y, current_y),
-                                        width: Math.abs(x - current_x), 
-                                        transform: transformMatrix
-                                    });
-                                }
+                                  if(lineWidth == null) {
+                                    if (current_x == x) {
+                                        edges.push({
+                                            y: Math.min(y, current_y), 
+                                            x: Math.min(x, current_x),
+                                            height: Math.abs(y - current_y),
+                                            transform: transformMatrix
+                                        });
+                                    } else if (current_y == y) {
+                                        edges.push({
+                                            x: Math.min(x, current_x), 
+                                            y: Math.min(y, current_y),
+                                            width: Math.abs(x - current_x), 
+                                            transform: transformMatrix
+                                        });
+                                    }
+                                  } else {
+                                    if (current_x == x) {
+                                        edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
+                                    } else if (current_y == y) {
+                                        edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
+                                    }
+                                  }
+                                  current_x = x;
+                                  current_y = y;
+                              } else if (op == 4) { // endPath
+                                  break;
                               } else {
-                                if (current_x == x) {
-                                    edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
-                                } else if (current_y == y) {
-                                    edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
-                                }
+                                  throw ('constructPath ' + op);
                               }
-                              current_x = x;
-                              current_y = y;
-                          } else {
-                              // throw ('constructPath ' + op);
                           }
                       }
                   } else if (pdfjsLib.OPS.save == fn) {
