@@ -61,7 +61,7 @@
     <div id="html-result">
     </div>
 
-    <script src="build/pdf.js"></script>
+    <script src="build/pdf.mjs"></script>
     <script src="pdf-table-extractor.js"></script>
     <script id="script">
         var drop = document.getElementById('drop');
@@ -144,7 +144,7 @@
         };
 
         var parse_content = function (content) {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'build/pdf.worker.js';
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'build/pdf.worker.mjs';
             pdfjsLib.cMapUrl = 'https://mozilla.github.io/pdf.js/web/cmaps/';
             pdfjsLib.cMapPacked = true;
 
