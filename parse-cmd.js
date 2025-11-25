@@ -5,6 +5,8 @@ var fs = require('fs');
 const canvas = require('canvas');
 global.DOMMatrix = canvas.DOMMatrix;
 global.pdfjsLib = require('pdfjs-dist/legacy/build/pdf.mjs');
+pdfjsLib.cMapUrl = 'pdfjs-dist/cmaps/';
+pdfjsLib.cMapPacked = true;
 
 require('./pdf-table-extractor.js');
 

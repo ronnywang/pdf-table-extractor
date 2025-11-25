@@ -45,64 +45,67 @@ pdf_table_extractor = function(doc){
                   REVOPS[pdfjsLib.OPS[op]] = op;
               }
 
-              var strokeRGBColor = null;
-              var fillRGBColor = null;
               var current_x, current_y;
               var edges = [];
               var line_max_width = 2;
-              var lineWidth = null;
 
               while (opList.fnArray.length) {
                   var fn = opList.fnArray.shift();
                   var args = opList.argsArray.shift();
                   if (pdfjsLib.OPS.constructPath == fn) {
+                      path = [];
+                      path_x_min = path_x_max = path_y_min = path_y_max = null;
+                      fn2 = args[0];
                       for (var ops of args[1]) {
+                          if (ops === null) {
+                              continue;
+                          }
                           ops = Array.from(ops);
                           while (ops.length) {
                               op = ops.shift();
                               if (op == pdfjsLib.OPS.rectangle) {
                                   throw('rectangle not expected');
+                              } else if (op == 0 || op == 1) { // pdfjsLib.DrawOPS.moveTo) {
                                   x = ops.shift();
                                   y = ops.shift();
-                                  width = ops.shift();
-                                  height = ops.shift();
-                                  if (Math.min(width, height) < line_max_width) {
-                                      edges.push({y:y, x:x, width:width, height:height, transform: transformMatrix});
-                                  }
-                              } else if (op == 0) { // pdfjsLib.OPS.moveTo
-                                  current_x = ops.shift();
-                                  current_y = ops.shift();
-                              } else if (op == 1) { // pdfjsLib.OPS.lineTo
-                                  x = ops.shift();
-                                  y = ops.shift();
-
-                                  if(lineWidth == null) {
-                                    if (current_x == x) {
-                                        edges.push({
-                                            y: Math.min(y, current_y), 
-                                            x: Math.min(x, current_x),
-                                            height: Math.abs(y - current_y),
-                                            transform: transformMatrix
-                                        });
-                                    } else if (current_y == y) {
-                                        edges.push({
-                                            x: Math.min(x, current_x), 
-                                            y: Math.min(y, current_y),
-                                            width: Math.abs(x - current_x), 
-                                            transform: transformMatrix
-                                        });
-                                    }
+                                  if (null === path_x_min) {
+                                      path_x_min = path_x_max = x;
+                                      path_y_min = path_y_max = y;
                                   } else {
-                                    if (current_x == x) {
-                                        edges.push({y: Math.min(y, current_y), x: x - lineWidth / 2, width: lineWidth, height: Math.abs(y - current_y), transform: transformMatrix});
-                                    } else if (current_y == y) {
-                                        edges.push({x: Math.min(x, current_x), y: y - lineWidth / 2, height: lineWidth, width: Math.abs(x - current_x), transform: transformMatrix});
-                                    }
+                                      path_x_min = Math.min(path_x_min, x);
+                                      path_x_max = Math.max(path_x_max, x);
+                                      path_y_min = Math.min(path_y_min, y);
+                                      path_y_max = Math.max(path_y_max, y);
                                   }
-                                  current_x = x;
-                                  current_y = y;
-                              } else if (op == 4) { // endPath
-                                  break;
+                                  path.push([x, y]);
+                              } else if (op == 4) { //pdfjsLib.DrawOPS.closePath) {
+                                  if (fn2 == pdfjsLib.OPS.eoFill) {
+                                      width = path_x_max - path_x_min;
+                                      height = path_y_max - path_y_min;
+                                      if (height > width && height > line_max_width) {
+                                          edges.push({
+                                              x: path_x_min,
+                                              y: path_y_min,
+                                              width: 0,
+                                              height: height,
+                                              transform: transformMatrix,
+                                          });
+                                      } else if (width > height && width > line_max_width) {
+                                          edges.push({
+                                              x: path_x_min,
+                                              y: path_y_min,
+                                              width: width,
+                                              height: 0,
+                                              transform: transformMatrix,
+                                          });
+                                      } else if (width <= line_max_width && height <= line_max_width) {
+                                          // do nothing
+                                      } else {
+                                        throw 'Unknown line direction ' + width + 'x' + height;
+                                      }
+                                  }
+                                  path = [];
+                                  path_x_min = path_x_max = path_y_min = path_y_max = null;
                               } else {
                                   throw ('constructPath ' + op);
                               }
@@ -114,13 +117,6 @@ pdf_table_extractor = function(doc){
                       transformMatrix = transformStack.pop();
                   } else if (pdfjsLib.OPS.transform == fn) {
                       transformMatrix = transform_fn(transformMatrix, args);
-                  } else if (pdfjsLib.OPS.setStrokeRGBColor == fn) {
-                      strokeRGBColor = args;
-                  } else if (pdfjsLib.OPS.setFillRGBColor == fn) {
-                      fillRGBColor = args;
-                  } else if (pdfjsLib.OPS.setLineWidth == fn) {
-                      lineWidth = args[0];
-                  } else if (['eoFill'].indexOf(REVOPS[fn]) >= 0) {
                   } else if ('undefined' === typeof(showed[fn])) {
                       showed[fn] = REVOPS[fn];
                   } else {
@@ -143,6 +139,42 @@ pdf_table_extractor = function(doc){
                         height: Math.abs(point1[1] - point2[1]),
                       };
               });
+              edges = edges.filter(function(edge){
+                  if (edge.width < line_max_width && edge.height < line_max_width) {
+                      return false;
+                  }
+                  return true;
+              });
+
+              // filter edges don't cross to other edges
+              edges = edges.filter(function(edge){
+                  for (var checking_edge of edges) {
+                      if (edge === checking_edge) {
+                          continue;
+                      }
+
+                      if (edge.width > line_max_width) {
+                          // horizon line
+                          if (checking_edge.x > edge.x + edge.width || checking_edge.x + checking_edge.width < edge.x) {
+                              continue;
+                          }
+                          if (checking_edge.y > edge.y && checking_edge.y + checking_edge.height < edge.y + edge.height) {
+                              return false;
+                          }
+                      }
+                      if (edge.height > line_max_width) {
+                          // verticle line
+                          if (checking_edge.y > edge.y + edge.height || checking_edge.y + checking_edge.height < edge.y) {
+                              continue;
+                          }
+                          if (checking_edge.x > edge.x && checking_edge.x + checking_edge.width < edge.x + edge.width) {
+                              return false;
+                          }
+                      }
+                  }
+                  return true;
+              });
+
               // merge rectangle to verticle lines and horizon lines
               edges1 = JSON.parse(JSON.stringify(edges));
               edges1.sort(function(a, b){ return (a.x - b.x) || (a.y - b.y); });
