@@ -128,6 +128,12 @@ pdf_table_extractor = function(doc){
               }
 
               edges = edges.map(function(edge){
+                      if ('undefined' === typeof(edge.width)) {
+                          edge.width = 0;
+                      }
+                      if ('undefined' === typeof(edge.height)) {
+                          edge.height = 0;
+                      }
                       var point1 = applyTransform_fn([edge.x, edge.y], edge.transform);
                       var point2 = applyTransform_fn([edge.x + edge.width, edge.y + edge.height], edge.transform);
                       return {
