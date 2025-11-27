@@ -79,7 +79,7 @@ pdf_table_extractor = function(doc){
                                   }
                                   path.push([x, y]);
                               } else if (op == 4) { //pdfjsLib.DrawOPS.closePath) {
-                                  if (fn2 == pdfjsLib.OPS.eoFill) {
+                                  if (fn2 == pdfjsLib.OPS.eoFill || fn2 == pdfjsLib.OPS.fill) {
                                       width = path_x_max - path_x_min;
                                       height = path_y_max - path_y_min;
                                       if (height > width && height > line_max_width) {
