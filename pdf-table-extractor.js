@@ -98,10 +98,8 @@ pdf_table_extractor = function(doc){
                                               height: 0,
                                               transform: transformMatrix,
                                           });
-                                      } else if (width <= line_max_width && height <= line_max_width) {
-                                          // do nothing
                                       } else {
-                                        throw 'Unknown line direction ' + width + 'x' + height;
+                                          // do nothing
                                       }
                                   }
                                   path = [];
