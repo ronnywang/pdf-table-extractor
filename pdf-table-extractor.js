@@ -105,7 +105,7 @@ pdf_table_extractor = function(doc){
                                   path = [];
                                   path_x_min = path_x_max = path_y_min = path_y_max = null;
                               } else {
-                                  throw ('constructPath ' + op);
+                                  //throw ('constructPath ' + op);
                               }
                           }
                       }
