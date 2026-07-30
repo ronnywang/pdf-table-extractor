@@ -529,6 +529,11 @@ pdf_table_extractor = function(doc){
                 if ('function' === typeof(pdf_table_extractor_progress)) {
                     pdf_table_extractor_progress(result);
                 }
+                // pdf.js 預設會把每一頁解碼過的字型/圖片/操作列表留在記憶體裡（設計上是給
+                // 互動式重複渲染用的），這支工具是一次性批次處理、用完這一頁就不會再回頭看，
+                // 不呼叫 page.cleanup() 的話，頁數一多（幾百~幾千頁）記憶體會線性甚至更快地
+                // 累積上去，實測真的撐爆機器記憶體到50GB+被系統 OOM killer 砍掉。
+                page.cleanup();
           });
       });
     });
