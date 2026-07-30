@@ -363,20 +363,23 @@ pdf_table_extractor = function(doc){
                   }
               }
 
-              while (true) {
-                  var merged = false;
-                  for (var r_c in verticle_merges) {
-                      var m = verticle_merges[r_c];
+              // 原本用「while(true) { for..in 全表 找一個可合併的就 break，再重掃一輪 }」，
+              // 是 O(合併格數^2)：每 apply 一次合併就整個 dict 重新掃一次。
+              // 正常表格沒事，但遇到誤判成表格線的雜訊（例如整頁圖章/裝飾線被偵測成上百條格線），
+              // 合併格數可能上看數萬筆，平方下去單頁就要幾十秒。
+              // 改成對每個 key 只掃一次、順著 final_id 鏈一路合併到底，維持同樣的合併結果，複雜度降到 O(合併格數)。
+              for (var r_c of Object.keys(verticle_merges)) {
+                  var m = verticle_merges[r_c];
+                  if ('undefined' === typeof(m)) {
+                      continue;
+                  }
+                  while (true) {
                       var final_id = [m.row + m.height - 1, m.col + m.width - 1].join('-');
-                      if ('undefined' !== typeof(verticle_merges[final_id])) {
-                          verticle_merges[r_c].height += verticle_merges[final_id].height - 1;
-                          delete(verticle_merges[final_id]);
-                          merged = true;
+                      if (final_id === r_c || 'undefined' === typeof(verticle_merges[final_id])) {
                           break;
                       }
-                  }
-                  if (!merged) {
-                      break;
+                      m.height += verticle_merges[final_id].height - 1;
+                      delete(verticle_merges[final_id]);
                   }
               }
 
@@ -419,20 +422,19 @@ pdf_table_extractor = function(doc){
                   horizons.push({y:y_max, lines:[]});
               }
 
-              while (true) {
-                  var merged = false;
-                  for (var r_c in horizon_merges) {
-                      var m = horizon_merges[r_c];
+              // 同上，horizon_merges 也改成 O(合併格數) 的單輪掃描
+              for (var r_c of Object.keys(horizon_merges)) {
+                  var m = horizon_merges[r_c];
+                  if ('undefined' === typeof(m)) {
+                      continue;
+                  }
+                  while (true) {
                       var final_id = [m.row + m.height - 1, m.col + m.width - 1].join('-');
-                      if ('undefined' !== typeof(horizon_merges[final_id])) {
-                          horizon_merges[r_c].width += horizon_merges[final_id].width - 1;
-                          delete(horizon_merges[final_id]);
-                          merged = true;
+                      if (final_id === r_c || 'undefined' === typeof(horizon_merges[final_id])) {
                           break;
                       }
-                  }
-                  if (!merged) {
-                      break;
+                      m.width += horizon_merges[final_id].width - 1;
+                      delete(horizon_merges[final_id]);
                   }
               }
               merges = verticle_merges;
