@@ -64,7 +64,41 @@ pdf_table_extractor = function(doc){
                           while (ops.length) {
                               op = ops.shift();
                               if (op == pdfjsLib.OPS.rectangle) {
-                                  throw('rectangle not expected');
+                                  // `re`（矩形）運算元本身就是一個完整封閉的子路徑
+                                  // （等同 moveTo+3條lineTo+closePath），不像其他線段是
+                                  // 靠後面的 closePath 才觸發判斷，這裡直接比照 closePath
+                                  // 那段的「填色且細長就當格線」邏輯，用矩形自己的 x/y/寬/高
+                                  // 判斷，不需要等 closePath（原本遇到這個op直接throw、整份
+                                  // 處理中斷，這是某些PDF匯出工具很常見的畫法，不是異常情況）
+                                  rx = ops.shift();
+                                  ry = ops.shift();
+                                  rw = ops.shift();
+                                  rh = ops.shift();
+                                  if (fn2 == pdfjsLib.OPS.eoFill || fn2 == pdfjsLib.OPS.fill) {
+                                      rx0 = Math.min(rx, rx + rw);
+                                      ry0 = Math.min(ry, ry + rh);
+                                      rwidth = Math.abs(rw);
+                                      rheight = Math.abs(rh);
+                                      if (rheight > rwidth && rheight > line_max_width) {
+                                          edges.push({
+                                              x: rx0,
+                                              y: ry0,
+                                              width: 0,
+                                              height: rheight,
+                                              transform: transformMatrix,
+                                          });
+                                      } else if (rwidth > rheight && rwidth > line_max_width) {
+                                          edges.push({
+                                              x: rx0,
+                                              y: ry0,
+                                              width: rwidth,
+                                              height: 0,
+                                              transform: transformMatrix,
+                                          });
+                                      } else {
+                                          // do nothing
+                                      }
+                                  }
                               } else if (op == 0 || op == 1) { // pdfjsLib.DrawOPS.moveTo) {
                                   x = ops.shift();
                                   y = ops.shift();
